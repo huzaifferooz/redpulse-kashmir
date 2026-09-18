@@ -365,7 +365,7 @@
         <button type="submit" class="waitlist-submit">Notify me</button>
       </form>
       <p class="form-success" id="formSuccess">Thanks — you're on the list. We'll reach out as Red Pulse opens near you.</p>
-      <p class="form-note">Concept preview — this form isn't connected to anything yet.</p>
+      <p class="form-note">Your details go straight to our team — no spam, no sharing.</p>
     </div>
   </div>
 </section>
@@ -387,12 +387,44 @@
     });
   });
 
+  const SUPABASE_URL = 'https://guygfafweunlnoxcddnr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_ob_-jGyV675Ufp6Hmk6efA_-z-02D_M';
+
   const form = document.getElementById('waitlistForm');
   const success = document.getElementById('formSuccess');
-  form.addEventListener('submit', (e)=>{
+  const submitBtn = form.querySelector('.waitlist-submit');
+
+  form.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    form.style.display = 'none';
-    success.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    const payload = {
+      name: form.name.value,
+      phone: form.phone.value,
+      area: form.area.value,
+      role: provBtn.getAttribute('aria-pressed') === 'true' ? 'provider' : 'patient'
+    };
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Submit failed');
+      form.style.display = 'none';
+      success.style.display = 'block';
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Notify me';
+      alert('Something went wrong — please check your connection and try again.');
+    }
   });
 </script>
 
